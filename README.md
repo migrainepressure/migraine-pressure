@@ -1,6 +1,6 @@
 # Migraine Pressure
 
-A small installable web app (PWA) that shows barometric pressure from 72 h back to 72 h ahead, with the rate of change made explicit, for tracking pressure shifts as migraine triggers.
+A small installable web app (PWA) that shows barometric pressure from 72 h back to 72 h ahead, with the rate of change made explicit, for tracking pressure shifts as migraine triggers. Four tabs: Now (the zoomable chart), Outlook (the next shift, day by day rows, and the list of shifts), History (the last 14 days) and Settings.
 
 ## What is in the folder
 
@@ -29,7 +29,7 @@ Open the URL in the phone's browser, set a location in Settings (search a town, 
 
 ## Data
 
-Hourly sea level pressure (or station pressure, switchable) from Open-Meteo: 7 days of observations and 7 days of forecast, refreshed on open when the cached copy is more than 30 minutes old. No account, no key, no tracking. Data licence CC BY 4.0.
+Hourly sea level pressure (or station pressure, switchable) from Open-Meteo: 14 days of observations and 7 days of forecast, with daily sunrise and sunset for the sky row, refreshed on open when the cached copy is more than 30 minutes old. No account, no key, no tracking. Data licence CC BY 4.0.
 
 ## How the rate of change is worked out
 
@@ -43,6 +43,10 @@ All differences are trailing: the value at hour *t* minus the value at hour *t* 
 | Large | 5 and over | 8 and over | strong tone, flag |
 
 Mild starts at half the moderate value. The moderate and large values for both windows are editable in Settings, as is the 3 h threshold used by the columns on the Tendency tab. Thresholds are in hPa whatever display unit is chosen. They are starting points drawn from the migraine literature, not clinical advice.
+
+## Reading the chart
+
+Under the date axis sit two thin rows. The sky row shows day (amber) and night (blue-grey) from the location's actual sunrise and sunset, with a sun at solar noon and a moon at midnight drawn with its phase, so "last night" can be found without reading a timestamp; nights are also faintly shaded in the plot. The rate row repeats the tier colour of the trace hour by hour.
 
 ## Gestures on the main chart
 
