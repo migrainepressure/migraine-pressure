@@ -1,4 +1,4 @@
-# Migraine Pressure
+# Barometer
 
 A small installable web app (PWA) that shows barometric pressure from 72 h back to 72 h ahead, with the rate of change made explicit, for tracking pressure shifts as migraine triggers.
 
@@ -7,7 +7,7 @@ A small installable web app (PWA) that shows barometric pressure from 72 h back 
 | File | Purpose |
 |---|---|
 | `index.html` | The whole app: markup, styles and logic in one file. No build step, no dependencies. |
-| `manifest.webmanifest` | Lets the phone install it to the home screen as "Migraine Pressure". |
+| `manifest.webmanifest` | Lets the phone install it to the home screen as "Barometer". |
 | `sw.js` | Service worker. Caches the app shell so it opens offline; the last pressure data is kept in local storage. |
 | `icons/` | Home screen icons. |
 
