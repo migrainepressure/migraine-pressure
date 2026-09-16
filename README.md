@@ -1,4 +1,4 @@
-# Barometer
+# Migraine Pressure
 
 A small installable web app (PWA) that shows barometric pressure from 72 h back to 72 h ahead, with the rate of change made explicit, for tracking pressure shifts as migraine triggers.
 
@@ -7,7 +7,7 @@ A small installable web app (PWA) that shows barometric pressure from 72 h back 
 | File | Purpose |
 |---|---|
 | `index.html` | The whole app: markup, styles and logic in one file. No build step, no dependencies. |
-| `manifest.webmanifest` | Lets the phone install it to the home screen as "Barometer". |
+| `manifest.webmanifest` | Lets the phone install it to the home screen as "Migraine Pressure". |
 | `sw.js` | Service worker. Caches the app shell so it opens offline; the last pressure data is kept in local storage. |
 | `icons/` | Home screen icons. |
 
@@ -33,15 +33,16 @@ Hourly sea level pressure (or station pressure, switchable) from Open-Meteo: 7 d
 
 ## How the rate of change is worked out
 
-All differences are trailing: the value at hour *t* minus the value at hour *t* minus the window.
+All differences are trailing: the value at hour *t* minus the value at hour *t* minus the window. Each hour is then given a tier from whichever of the 12 h or 24 h change scores higher against its own thresholds, and the tier colours the trace, the rate strip under the chart and the shift flags.
 
-| Measure | Where it shows | Default threshold |
-|---|---|---|
-| Change over 3 h | Deltas beside the hero number; the column strip under the main chart (re-binned to per hour when zoomed to 30 h or less) | ±1.0 hPa |
-| Change over 12 h | Hatched shift spans on the main chart; the Shifts list on the Tendency tab. A span runs from the start of the first 12 h window that exceeds the threshold to the end of the last consecutive one | ±3.0 hPa |
-| Change over 24 h | Trailing line on the Tendency tab; the Tendency hero shows the largest 24 h change in the forecast | ±5.0 hPa |
+| Tier | 12 h change | 24 h change | Shown as |
+|---|---|---|---|
+| Steady | under 1.5 | under 2.5 | grey trace, empty strip |
+| Mild | 1.5 to 3 | 2.5 to 5 | light blue (rise) or light red (fall) |
+| Moderate | 3 to 5 | 5 to 8 | mid tone, flag at onset with the peak change |
+| Large | 5 and over | 8 and over | strong tone, flag |
 
-Thresholds are in hPa whatever display unit is chosen, and are editable in Settings. They are starting points drawn from the migraine literature, not clinical advice.
+Mild starts at half the moderate value. The moderate and large values for both windows are editable in Settings, as is the 3 h threshold used by the columns on the Tendency tab. Thresholds are in hPa whatever display unit is chosen. They are starting points drawn from the migraine literature, not clinical advice.
 
 ## Gestures on the main chart
 

@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Barometer">
+<meta name="apple-mobile-web-app-title" content="Migraine Pressure">
 <meta name="color-scheme" content="dark">
-<title>Barometer</title>
+<title>Migraine Pressure</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -100,7 +100,7 @@ input:focus, select:focus { outline: 2px solid var(--line); outline-offset: 1px;
 <!-- NOW -->
 <section class="screen active" id="scr-now">
   <div class="header">
-    <div><h1>Barometer</h1><div class="sub" id="now-sub">No location yet</div></div>
+    <div><h1>Migraine Pressure</h1><div class="sub" id="now-sub">No location yet</div></div>
     <button class="iconbtn" id="btn-settings" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b9bcc4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button>
   </div>
   <div class="banner hidden" id="banner"></div>
@@ -113,14 +113,10 @@ input:focus, select:focus { outline: 2px solid var(--line); outline-offset: 1px;
   </div>
   <div class="card">
     <div class="card-title"><div class="t" id="chart-range">−72 h to +72 h</div><div class="r" id="chart-hint">pinch · drag · tap to read</div></div>
-    <svg class="chart" id="main-chart" height="240"></svg>
+    <svg class="chart" id="main-chart" height="262"></svg>
     <div id="scrub-wrap" class="hidden"><svg class="chart" id="scrub" height="34"></svg></div>
-    <div class="legend"><span class="key"><span class="sw" style="background: var(--line)"></span>observed</span><span class="key"><span class="sw dash"></span>forecast</span><span class="key"><span class="sw hatch" style="background-color: var(--warn)"></span><span id="key-shift">shift ≥ 3 hPa in 12 h</span></span><button class="pill hidden" id="btn-reset" style="margin-left: auto;">Reset to ±72 h</button></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><div class="t" id="strip-title">Change per 3 h</div><div class="r" id="strip-unit">hPa</div></div>
-    <svg class="chart" id="strip-chart" height="84"></svg>
-    <div class="legend"><span class="key"><span class="sw" style="background: var(--rise)"></span>rise</span><span class="key"><span class="sw" style="background: var(--fall)"></span>fall</span><span class="key"><span class="sw hatch" style="background-color: var(--fall)"></span><span id="key-strip">beyond ±1.0 hPa / 3 h</span></span></div>
+    <div class="legend" id="rate-legend"></div>
+    <div class="legend"><span class="key"><span class="sw dash"></span>forecast</span><span class="key" id="key-flag"></span><button class="pill hidden" id="btn-reset" style="margin-left: auto;">Reset to ±72 h</button></div>
   </div>
   <div class="stats" id="stats"></div>
 </section>
@@ -142,7 +138,7 @@ input:focus, select:focus { outline: 2px solid var(--line); outline-offset: 1px;
     <div class="legend"><span class="key"><span class="sw" style="background: var(--ink2)"></span>trailing 24 h</span><span class="key"><span class="sw" style="background: var(--rise)"></span>rise past threshold</span><span class="key"><span class="sw" style="background: var(--fall)"></span>fall past threshold</span></div>
   </div>
   <div class="card" style="padding-bottom: 4px;">
-    <div class="card-title"><div class="t">Shifts</div><div class="r" id="ev-r">≥ 3 hPa in 12 h</div></div>
+    <div class="card-title"><div class="t">Shifts</div><div class="r" id="ev-r">moderate and large</div></div>
     <div id="events"></div>
   </div>
 </section>
@@ -158,9 +154,11 @@ input:focus, select:focus { outline: 2px solid var(--line); outline-offset: 1px;
   </div>
   <div class="section">
     <div class="st">Shift alerts</div>
-    <div class="row"><div class="lab"><div class="a">Change over 3 h</div><div class="b">Fast swings, hatched on the strip</div></div><input type="number" id="s-thr3" step="0.1" min="0.1" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
-    <div class="row"><div class="lab"><div class="a">Change over 12 h</div><div class="b">Marks shift spans on the chart</div></div><input type="number" id="s-thr12" step="0.5" min="0.5" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
-    <div class="row"><div class="lab"><div class="a">Change over 24 h</div><div class="b">Typical trigger magnitude</div></div><input type="number" id="s-thr24" step="0.5" min="0.5" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
+    <div class="row"><div class="lab"><div class="a">12 h change, moderate from</div><div class="b">Colours the trace and the rate strip; mild starts at half this</div></div><input type="number" id="s-m12" step="0.5" min="0.5" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
+    <div class="row"><div class="lab"><div class="a">12 h change, large from</div></div><input type="number" id="s-l12" step="0.5" min="0.5" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
+    <div class="row"><div class="lab"><div class="a">24 h change, moderate from</div><div class="b">Slower shifts the 12 h window misses</div></div><input type="number" id="s-m24" step="0.5" min="0.5" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
+    <div class="row"><div class="lab"><div class="a">24 h change, large from</div></div><input type="number" id="s-l24" step="0.5" min="0.5" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
+    <div class="row"><div class="lab"><div class="a">3 h change threshold</div><div class="b">For the columns on the Tendency tab</div></div><input type="number" id="s-thr3" step="0.1" min="0.1" class="mono"><span class="mono" style="font-size: 12px; color: var(--muted)">hPa</span></div>
   </div>
   <div class="section">
     <div class="st">Chart</div>
@@ -187,11 +185,12 @@ input:focus, select:focus { outline: 2px solid var(--line); outline-offset: 1px;
 <script>
 'use strict';
 // ------------------------------------------------------------------ state
-const DEFAULTS = { lat: null, lon: null, place: '', unit: 'hPa', variable: 'pressure_msl', thr3: 1.0, thr12: 3.0, thr24: 5.0, high: 1022.7, low: 1009.1, span: 72 };
-const S = Object.assign({}, DEFAULTS, load('baro.settings') || {});
+const DEFAULTS = { lat: null, lon: null, place: '', unit: 'hPa', variable: 'pressure_msl', thr3: 1.0, m12: 3.0, l12: 5.0, m24: 5.0, l24: 8.0, high: 1022.7, low: 1009.1, span: 72 };
+const S = Object.assign({}, DEFAULTS, load('baro.settings') || {}); delete S.thr12; delete S.thr24;
 let D = load('baro.data'); // { fetchedAt, lat, lon, offset, t0, msl:[], sfc:[] }
 let P = [], T0 = 0, OFF = 0, N = 0, NOWH = 0, NOWI = 0;
-let D3 = [], D12 = [], D24 = [], EV = [];
+let D3 = [], D12 = [], D24 = [], EV = [], TIER = [];
+const RISE = ['#2f5f9c', '#3987e5', '#8fbcf2'], FALL = ['#8f3c3c', '#e66767', '#f6a6a6'], STEADY = '#6b7280';
 const view = { center: 0, half: S.span };
 let cross = null; // hour index under the crosshair, or null
 const $ = (id) => document.getElementById(id);
@@ -242,13 +241,28 @@ function compute() {
   NOWH = (Date.now() - T0) / 3600000; NOWI = Math.max(0, Math.min(N - 1, Math.floor(NOWH)));
   const dk = (k) => P.map((v, i) => (i - k >= 0 && v != null && P[i - k] != null ? Math.round((v - P[i - k]) * 10) / 10 : null));
   D3 = dk(3); D12 = dk(12); D24 = dk(24);
-  EV = []; let cur = null;
-  for (let h = 12; h < N; h++) {
-    const big = D12[h] != null && Math.abs(D12[h]) >= S.thr12;
-    if (big && !cur) cur = { start: h - 12, end: h }; else if (big && cur) cur.end = h; else if (!big && cur) { EV.push(cur); cur = null; }
+  // Tier per hour, centred on the window it describes: 0 steady, 1 mild, 2 moderate, 3 large. Sign and window from whichever of 12 h / 24 h scores higher.
+  const t12 = (v) => (v == null ? 0 : Math.abs(v) < S.m12 / 2 ? 0 : Math.abs(v) < S.m12 ? 1 : Math.abs(v) < S.l12 ? 2 : 3);
+  const t24 = (v) => (v == null ? 0 : Math.abs(v) < S.m24 / 2 ? 0 : Math.abs(v) < S.m24 ? 1 : Math.abs(v) < S.l24 ? 2 : 3);
+  TIER = P.map((_, i) => {
+    const a = D12[Math.min(N - 1, i + 6)] ?? D12[i], b = D24[Math.min(N - 1, i + 12)] ?? D24[i];
+    const ta = t12(a), tb = t24(b);
+    const s12 = a == null ? 0 : Math.abs(a) / S.m12, s24 = b == null ? 0 : Math.abs(b) / S.m24;
+    const use12 = ta > tb || (ta === tb && s12 >= s24);
+    const v = use12 ? a : b; const t = Math.max(ta, tb);
+    return { t, sign: t === 0 || v == null ? 0 : Math.sign(v), win: use12 ? 12 : 24, v: v ?? 0 };
+  });
+  // Shift events: runs of tier >= 2, extended to the surrounding tier >= 1 hours; peak is the largest |change| in the run.
+  EV = []; let i = 0;
+  while (i < N) {
+    if (TIER[i].t >= 2) { let a = i; while (a > 0 && TIER[a - 1].t >= 1) a--; let b = i; while (b < N - 1 && TIER[b + 1].t >= 1) b++;
+      let pk = i; for (let k = a; k <= b; k++) if (TIER[k].t >= 2 && Math.abs(TIER[k].v) / (TIER[k].win === 12 ? S.m12 : S.m24) > Math.abs(TIER[pk].v) / (TIER[pk].win === 12 ? S.m12 : S.m24)) pk = k;
+      EV.push({ start: a, end: b, peak: pk, v: TIER[pk].v, win: TIER[pk].win, tier: Math.max(...TIER.slice(a, b + 1).map((x) => x.t)) }); i = b + 1; }
+    else i++;
   }
-  if (cur) EV.push(cur);
 }
+function tierColour(x) { if (!x || x.t === 0) return STEADY; return (x.sign > 0 ? RISE : FALL)[x.t - 1]; }
+const TIER_NAME = ['steady', 'mild', 'moderate', 'large'];
 
 // ------------------------------------------------------------------ svg helpers
 const NS = 'http://www.w3.org/2000/svg';
@@ -269,7 +283,7 @@ function clampView() {
 }
 function drawMain() {
   const svg = $('main-chart'); clear(svg); if (!N) return;
-  const w = width(svg), h = 240, padL = 40, padR = 10, padT = 16, padB = 22, pw = w - padL - padR, ph = h - padT - padB;
+  const w = width(svg), h = 262, padL = 40, padR = 10, padT = 16, padB = 44, pw = w - padL - padR, ph = h - padT - padB;
   svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.setAttribute('font-family', "'IBM Plex Mono', ui-monospace, monospace"); svg.setAttribute('font-size', '10');
   const [lo, hi] = visRange(); const span = hi - lo;
   const from = Math.max(0, Math.floor(lo)), to = Math.min(N - 1, Math.ceil(hi));
@@ -278,23 +292,22 @@ function drawMain() {
   const step = niceStep(Math.max(2, mx - mn + 1), 5);
   const y0 = Math.floor((mn - 0.5) / step) * step, y1 = Math.ceil((mx + 0.5) / step) * step;
   const X = (hr) => padL + ((hr - lo) / span) * pw, Y = (v) => padT + (1 - (v - y0) / (y1 - y0)) * ph;
-  const defs = el('defs', {}); defs.appendChild(hatch('hatchMain', col('warn'), 0.55)); svg.appendChild(defs);
+  const defs = el('defs', {}); svg.appendChild(defs);
   // bands
   if (S.high > y0 && S.high < y1 + step) { const y = Math.max(padT, Y(S.high)); svg.appendChild(el('rect', { x: padL, y: padT, width: pw, height: Math.max(0, y - padT), fill: 'rgba(255,255,255,0.035)' })); svg.appendChild(el('text', { x: padL + pw - 4, y: y - 4, 'text-anchor': 'end', fill: col('muted'), 'font-size': 9 }, `high ≥ ${fx(S.high)}`)); }
   if (S.low > y0 - step && S.low < y1) { const y = Math.min(padT + ph, Y(S.low)); svg.appendChild(el('rect', { x: padL, y, width: pw, height: Math.max(0, padT + ph - y), fill: 'rgba(255,255,255,0.035)' })); svg.appendChild(el('text', { x: padL + pw - 4, y: y + 11, 'text-anchor': 'end', fill: col('muted'), 'font-size': 9 }, `low < ${fx(S.low)}`)); }
-  // shift spans
-  for (const e of EV) { if (e.end < lo || e.start > hi) continue; const a = X(Math.max(e.start, lo)), b = X(Math.min(e.end, hi)); svg.appendChild(el('rect', { x: a, y: padT, width: b - a, height: ph, fill: 'url(#hatchMain)' })); }
   // grid + y ticks
   for (let v = y0; v <= y1 + 1e-9; v += step) { svg.appendChild(el('line', { x1: padL, x2: padL + pw, y1: Y(v), y2: Y(v), stroke: col('grid') })); svg.appendChild(el('text', { x: padL - 6, y: Y(v) + 3.5, 'text-anchor': 'end', fill: col('muted') }, tickFmt(v, step))); }
   // x ticks
   const tickH = [1, 3, 6, 12, 24, 48, 96].find((s) => pw / (span / s) >= 52) || 96;
   const firstLocalHour = local(0).getUTCHours();
   for (let hr = Math.ceil(lo); hr <= hi; hr++) {
-    const lh = (firstLocalHour + hr) % 24; if (lh % tickH !== 0) continue;
+    const lh = (firstLocalHour + hr) % 24; if (lh % Math.min(tickH, 24) !== 0) continue;
+    if (tickH > 24 && Math.round((hr - (24 - firstLocalHour) % 24) / 24) % (tickH / 24) !== 0) continue;
     if (hr < 0 || hr > N - 1) continue;
     const x = X(hr); svg.appendChild(el('line', { x1: x, x2: x, y1: padT + ph, y2: padT + ph + 4, stroke: col('axis') }));
     const label = tickH >= 24 ? fDate(hr) : lh === 0 ? fDate(hr) : fTime(hr);
-    svg.appendChild(el('text', { x, y: h - 6, 'text-anchor': 'middle', fill: col('muted'), 'font-weight': lh === 0 && tickH < 24 ? 500 : 400 }, label));
+    svg.appendChild(el('text', { x, y: padT + ph + 14, 'text-anchor': 'middle', fill: col('muted'), 'font-weight': lh === 0 && tickH < 24 ? 500 : 400 }, label));
   }
   svg.appendChild(el('line', { x1: padL, x2: padL + pw, y1: padT + ph, y2: padT + ph, stroke: col('axis') }));
   // clip for lines
@@ -302,12 +315,25 @@ function drawMain() {
   const g = el('g', { 'clip-path': `url(#${clipId})` }); svg.appendChild(g);
   const path = (a, b) => { let o = '', pen = false; for (let i = a; i <= b; i++) { if (P[i] == null) { pen = false; continue; } o += `${pen ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(P[i]).toFixed(1)}`; pen = true; } return o; };
   const pa = Math.max(0, from - 1), pb = Math.min(NOWI, to + 1);
-  if (pa < pb) {
-    g.appendChild(el('path', { d: path(pa, pb) + `L${X(pb).toFixed(1)} ${padT + ph}L${X(pa).toFixed(1)} ${padT + ph}Z`, fill: 'rgba(57,135,229,0.07)' }));
-    g.appendChild(el('path', { d: path(pa, pb), fill: 'none', stroke: col('line'), 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
-  }
+  if (pa < pb) g.appendChild(el('path', { d: path(pa, pb) + `L${X(pb).toFixed(1)} ${padT + ph}L${X(pa).toFixed(1)} ${padT + ph}Z`, fill: 'rgba(255,255,255,0.03)' }));
+  // trace coloured by rate tier: one path per run of equal colour, observed solid, forecast dashed
+  const seg = (a, b, dashed) => { let k = a; while (k < b) { const c = tierColour(TIER[k + 1]); let e = k + 1; while (e < b && tierColour(TIER[e + 1]) === c) e++;
+      const d = path(k, e); if (d) g.appendChild(el('path', { d, fill: 'none', stroke: c, 'stroke-width': TIER[k + 1].t ? 2.5 : 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', ...(dashed ? { 'stroke-dasharray': '5 4' } : {}) })); k = e; } };
+  if (pa < pb) seg(pa, pb, false);
   const fa = Math.max(NOWI, from - 1), fb = Math.min(N - 1, to + 1);
-  if (fa < fb) g.appendChild(el('path', { d: path(fa, fb), fill: 'none', stroke: col('line'), 'stroke-width': 2, 'stroke-dasharray': '5 4', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+  if (fa < fb) seg(fa, fb, true);
+  // rate strip under the axis
+  const sy = padT + ph + 20, sh = 10;
+  svg.appendChild(el('text', { x: padL - 6, y: sy + 8, 'text-anchor': 'end', fill: col('muted'), 'font-size': 8 }, 'rate'));
+  for (let i = Math.max(1, from); i <= to; i++) { const c = tierColour(TIER[i]); if (c === STEADY) continue; const x0 = Math.max(padL, X(i - 1)), x1 = Math.min(padL + pw, X(i)); if (x1 <= x0) continue;
+    svg.appendChild(el('rect', { x: x0.toFixed(1), y: sy, width: (x1 - x0 + 0.6).toFixed(1), height: sh, fill: c })); }
+  svg.appendChild(el('rect', { x: padL, y: sy, width: pw, height: sh, fill: 'none', stroke: col('grid') }));
+  // flags at the onset of moderate and large shifts
+  for (const e of EV) { if (e.tier < 2) continue; const at = e.start >= lo && e.start <= hi ? e.start : e.peak >= lo && e.peak <= hi ? e.peak : -1; if (at < 0 || P[at] == null) continue; const up = e.v > 0, x = X(at), y = Y(P[at]);
+    const c = (up ? RISE : FALL)[e.tier - 1];
+    svg.appendChild(el('path', { d: up ? `M${x} ${y + 9}l-4 7h8z` : `M${x} ${y - 9}l-4 -7h8z`, fill: c }));
+    const anchor = x > padL + pw - 44 ? 'end' : x < padL + 44 ? 'start' : 'middle';
+    svg.appendChild(el('text', { x, y: up ? y + 27 : y - 19, 'text-anchor': anchor, fill: col('ink'), 'font-size': 9 }, `${sg(e.v)}/${e.win}h`)); }
   // now
   if (NOWH >= lo && NOWH <= hi) {
     const x = X(NOWH); svg.appendChild(el('line', { x1: x, x2: x, y1: padT - 6, y2: padT + ph, stroke: col('now'), 'stroke-opacity': 0.7 }));
@@ -316,8 +342,10 @@ function drawMain() {
   }
   // extremes
   let mi = -1, ma = -1; for (let i = from; i <= to; i++) { if (P[i] == null) continue; if (mi < 0 || P[i] < P[mi]) mi = i; if (ma < 0 || P[i] > P[ma]) ma = i; }
+  const flagXs = EV.filter((e) => e.tier >= 2).map((e) => (e.start >= lo && e.start <= hi ? X(e.start) : e.peak >= lo && e.peak <= hi ? X(e.peak) : -999));
   for (const [i, above] of [[ma, true], [mi, false]]) { if (i < 0 || i === ma && !above && ma === mi) continue; const x = X(i);
-    svg.appendChild(el('circle', { cx: x, cy: Y(P[i]), r: 4, fill: col('line'), stroke: col('surface'), 'stroke-width': 2 }));
+    svg.appendChild(el('circle', { cx: x, cy: Y(P[i]), r: 4, fill: tierColour(TIER[i]), stroke: col('surface'), 'stroke-width': 2 }));
+    if (flagXs.some((fx0) => Math.abs(fx0 - x) < 44)) continue; // a flag label is already there
     const anchor = x > padL + pw - 40 ? 'end' : x < padL + 40 ? 'start' : 'middle';
     svg.appendChild(el('text', { x, y: Y(P[i]) + (above ? -9 : 15), 'text-anchor': anchor, fill: col('ink2') }, fx(P[i]))); }
   // crosshair
@@ -327,7 +355,7 @@ function drawMain() {
   // titles
   const l = view.center - view.half, r = view.center + view.half;
   $('chart-range').textContent = `${l < 0 ? '−' : '+'}${Math.abs(Math.round(l))} h to ${r < 0 ? '−' : '+'}${Math.abs(Math.round(r))} h`;
-  $('chart-hint').textContent = cross != null && P[cross] != null ? `${fBoth(cross)} · ${fx(P[cross])} ${S.unit} · 3 h ${D3[cross] == null ? '…' : sg(D3[cross])} · 24 h ${D24[cross] == null ? '…' : sg(D24[cross])}` : 'pinch · drag · tap to read';
+  $('chart-hint').textContent = cross != null && P[cross] != null ? `${fBoth(cross)} · ${fx(P[cross])} ${S.unit} · 12 h ${D12[cross] == null ? '…' : sg(D12[cross])} · 24 h ${D24[cross] == null ? '…' : sg(D24[cross])} · ${TIER_NAME[TIER[cross].t]}` : 'pinch · drag · tap to read';
   const isDefault = Math.abs(view.center) < 0.5 && Math.abs(view.half - S.span) < 0.5;
   $('btn-reset').classList.toggle('hidden', isDefault); $('btn-reset').textContent = `Reset to ±${S.span} h`;
   $('scrub-wrap').classList.toggle('hidden', isDefault); if (!isDefault) drawScrub(lo, hi);
@@ -403,20 +431,18 @@ function statusWord(d3) { if (d3 == null) return 'No recent reading'; const a = 
 function dotColour(v) { return v == null || Math.abs(v) < 0.05 ? col('muted') : v > 0 ? col('rise') : col('fall'); }
 function renderNow() {
   $('now-sub').textContent = S.place ? `${S.place} · updated ${D ? new Date(D.fetchedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '…'}` : 'No location yet';
-  $('hero-unit').textContent = S.unit; $('strip-unit').textContent = S.unit;
-  if (!N) { $('hero-val').textContent = '…'; $('hero-status').textContent = ''; $('d3-val').textContent = '…'; $('d24-val').textContent = '…'; $('stats').innerHTML = ''; clear($('main-chart')); clear($('strip-chart')); return; }
+  $('hero-unit').textContent = S.unit;
+  if (!N) { $('hero-val').textContent = '…'; $('hero-status').textContent = ''; $('d3-val').textContent = '…'; $('d24-val').textContent = '…'; $('stats').innerHTML = ''; clear($('main-chart')); return; }
   const i = NOWI, cur = interp(NOWH);
   $('hero-val').textContent = cur == null ? '…' : fx(cur);
   $('hero-status').textContent = `${statusWord(D3[i])} · ${fBoth(i)}`;
   $('d3-val').textContent = D3[i] == null ? '…' : sg(D3[i]); $('d3-dot').style.background = dotColour(D3[i]);
   $('d24-val').textContent = D24[i] == null ? '…' : sg(D24[i]); $('d24-dot').style.background = dotColour(D24[i]);
-  $('key-shift').textContent = `shift ≥ ${fx(S.thr12)} ${S.unit} in 12 h`;
+  const sw = (c) => `<span class="sw" style="background:${c}; width: 8px;"></span>`;
+  $('rate-legend').innerHTML = `<span class="key">${sw(STEADY)}steady</span><span class="key">rise ${RISE.map(sw).join('')}</span><span class="key">fall ${FALL.map(sw).join('')}</span><span class="key">tiers ${fx(S.m12 / 2)} · ${fx(S.m12)} · ${fx(S.l12)} in 12 h (${fx(S.m24 / 2)} · ${fx(S.m24)} · ${fx(S.l24)} in 24 h)</span>`;
+  $('key-flag').innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 2h8z" fill="${FALL[1]}"/></svg> shift begins, size at peak`;
   clampView(); drawMain();
   const [lo, hi] = visRange(); const span = hi - lo;
-  const stepH = span <= 30 ? 1 : span <= 200 ? 3 : 6; const thr = S.thr3 * stepH / 3;
-  $('strip-title').textContent = stepH === 1 ? 'Change per hour' : `Change per ${stepH} h`;
-  $('key-strip').textContent = `beyond ±${fx(thr)} ${S.unit} / ${stepH === 1 ? 'h' : stepH + ' h'}`;
-  drawColumns($('strip-chart'), { h: 84, lo, hi, stepH, thr, axisLabels: false });
   // stats
   const st = [];
   if (span <= 30) {
@@ -437,24 +463,24 @@ function renderNow() {
 }
 
 function renderTrend() {
-  $('t-hero-unit').textContent = `${S.unit} in 24 h`; $('t-hero-thr').textContent = `beyond ${fx(S.thr24)} ${S.unit}`;
-  $('t3-r').textContent = `${S.unit} · threshold ±${fx(S.thr3)}`; $('t24-r').textContent = `${S.unit} · threshold ±${fx(S.thr24)}`; $('ev-r').textContent = `≥ ${fx(S.thr12)} ${S.unit} in 12 h`;
+  $('t-hero-unit').textContent = `${S.unit} in 24 h`; $('t-hero-thr').textContent = `moderate from ${fx(S.m24)} ${S.unit}`;
+  $('t3-r').textContent = `${S.unit} · threshold ±${fx(S.thr3)}`; $('t24-r').textContent = `${S.unit} · moderate ±${fx(S.m24)}`; $('ev-r').textContent = 'moderate and large';
   if (!N) { $('t-hero').textContent = '…'; $('t-hero-sub').textContent = ''; $('events').innerHTML = ''; clear($('t3-chart')); clear($('t24-chart')); return; }
   let bi = -1; for (let k = NOWI + 1; k < N; k++) if (D24[k] != null && (bi < 0 || Math.abs(D24[k]) > Math.abs(D24[bi]))) bi = k;
   $('t-hero').textContent = bi < 0 ? '…' : sg(D24[bi]);
-  $('t-hero-sub').textContent = bi < 0 ? 'No forecast beyond 24 h' : `Largest shift ahead · from ${fBoth(bi - 24)}${Math.abs(D24[bi]) >= S.thr24 ? ' · past threshold' : ''}`;
+  $('t-hero-sub').textContent = bi < 0 ? 'No forecast beyond 24 h' : `Largest shift ahead · from ${fBoth(bi - 24)} · ${Math.abs(D24[bi]) >= S.l24 ? 'large' : Math.abs(D24[bi]) >= S.m24 ? 'moderate' : Math.abs(D24[bi]) >= S.m24 / 2 ? 'mild' : 'steady'}`;
   const lo = NOWH - 72, hi = NOWH + 72;
   drawColumns($('t3-chart'), { h: 110, lo, hi, stepH: 3, thr: S.thr3, axisLabels: true });
-  drawD24($('t24-chart'), { h: 120, lo, hi, thr: S.thr24 });
+  drawD24($('t24-chart'), { h: 120, lo, hi, thr: S.m24 });
   const evs = EV.filter((e) => e.end >= lo && e.start <= hi);
-  $('events').innerHTML = evs.length ? evs.map((e) => { const delta = P[e.end] - P[e.start], hrs = e.end - e.start, fut = e.start >= NOWH;
-    return `<div class="ev"><span class="dot" style="background:${delta > 0 ? col('rise') : col('fall')}; flex-shrink: 0;"></span><div class="body"><div class="h">${delta > 0 ? 'Rise' : 'Fall'} of <span class="mono">${sg(delta)}</span> ${S.unit} over ${hrs} h</div><div class="s">${fBoth(e.start)} to ${fBoth(e.end)} · ${fx(Math.abs(delta / hrs * 24))} ${S.unit} per 24 h</div></div><span class="tag${fut ? ' f' : ''}">${fut ? 'forecast' : e.end > NOWH ? 'under way' : 'observed'}</span></div>`; }).join('')
-    : `<div class="ev"><div class="body"><div class="s">No shift of ${fx(S.thr12)} ${S.unit} or more within 12 h in this window.</div></div></div>`;
+  $('events').innerHTML = evs.length ? evs.map((e) => { const delta = P[e.end] - P[e.start], hrs = Math.max(1, e.end - e.start), fut = e.start >= NOWH, up = e.v > 0;
+    return `<div class="ev"><span class="dot" style="background:${(up ? RISE : FALL)[e.tier - 1]}; flex-shrink: 0;"></span><div class="body"><div class="h">${TIER_NAME[e.tier][0].toUpperCase() + TIER_NAME[e.tier].slice(1)} ${up ? 'rise' : 'fall'}: <span class="mono">${sg(e.v)}</span> ${S.unit} in ${e.win} h at peak</div><div class="s">${fBoth(e.start)} to ${fBoth(e.end)} · ${sg(delta)} ${S.unit} over ${hrs} h · peak ${fBoth(e.peak)}</div></div><span class="tag${fut ? ' f' : ''}">${fut ? 'forecast' : e.end > NOWH ? 'under way' : 'observed'}</span></div>`; }).join('')
+    : `<div class="ev"><div class="body"><div class="s">No moderate or large shift in this window.</div></div></div>`;
 }
 
 function renderSettings() {
   $('loc-name').textContent = S.place || 'Not set'; $('loc-coords').textContent = S.lat == null ? 'Search below, or use the phone\'s position' : `${S.lat.toFixed(3)}, ${S.lon.toFixed(3)}`;
-  $('s-thr3').value = S.thr3; $('s-thr12').value = S.thr12; $('s-thr24').value = S.thr24; $('s-high').value = S.high; $('s-low').value = S.low; $('s-span').value = S.span; $('s-var').value = S.variable; $('s-unit').value = S.unit;
+  $('s-thr3').value = S.thr3; $('s-m12').value = S.m12; $('s-l12').value = S.l12; $('s-m24').value = S.m24; $('s-l24').value = S.l24; $('s-high').value = S.high; $('s-low').value = S.low; $('s-span').value = S.span; $('s-var').value = S.variable; $('s-unit').value = S.unit;
   $('s-updated').textContent = D ? new Date(D.fetchedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'never';
 }
 function renderAll() { renderNow(); renderTrend(); renderSettings(); }
@@ -488,7 +514,7 @@ function showTab(name) { document.querySelectorAll('.screen').forEach((s) => s.c
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 $('btn-settings').addEventListener('click', () => showTab('settings'));
 function bindNum(id, key, after) { $(id).addEventListener('change', (e) => { const v = parseFloat(e.target.value); if (!isNaN(v)) { S[key] = v; save('baro.settings', S); if (after) after(); compute(); renderAll(); } }); }
-bindNum('s-thr3', 'thr3'); bindNum('s-thr12', 'thr12'); bindNum('s-thr24', 'thr24'); bindNum('s-high', 'high'); bindNum('s-low', 'low');
+bindNum('s-thr3', 'thr3'); bindNum('s-m12', 'm12'); bindNum('s-l12', 'l12'); bindNum('s-m24', 'm24'); bindNum('s-l24', 'l24'); bindNum('s-high', 'high'); bindNum('s-low', 'low');
 $('s-span').addEventListener('change', (e) => { S.span = parseInt(e.target.value, 10); view.center = 0; view.half = S.span; save('baro.settings', S); renderAll(); });
 $('s-var').addEventListener('change', (e) => { S.variable = e.target.value; save('baro.settings', S); compute(); renderAll(); });
 $('s-unit').addEventListener('change', (e) => { S.unit = e.target.value; save('baro.settings', S); renderAll(); });
